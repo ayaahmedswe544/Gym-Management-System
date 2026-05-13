@@ -50,6 +50,8 @@ namespace Gym_Management_System
             #region Dependency Injection
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped<ITrainerService, TrainerService>();
+            builder.Services.AddScoped<IFileService, FileService>();
             #endregion
 
             // Add AutoMapper
@@ -134,7 +136,8 @@ namespace Gym_Management_System
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gym Management API v1");
                 });
             }
-
+            app.UseSerilogRequestLogging();
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseCors("AllowAll");
 

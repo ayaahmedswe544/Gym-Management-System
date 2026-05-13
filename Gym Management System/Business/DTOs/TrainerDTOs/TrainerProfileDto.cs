@@ -1,13 +1,12 @@
-﻿namespace Gym_Management_System.Data.Models
+﻿namespace Gym_Management_System.Business.DTOs.TrainerDTOs
 {
-    public class TrainerProfile
+    public class TrainerProfileDto
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public User? User { get; set; }
-
+        public string FullName { get; set; } = string.Empty; 
         public string Bio { get; set; } = string.Empty;
-        public string Specialties { get; set; } = string.Empty; // Store as comma-separated or JSON
+        public string Specialties { get; set; } = string.Empty;
         public int YearsOfExperience { get; set; }
         public string SocialLinks { get; set; } = string.Empty;
         public string? PhotoUrl { get; set; } = string.Empty;

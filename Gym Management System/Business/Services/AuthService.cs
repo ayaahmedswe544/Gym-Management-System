@@ -2,6 +2,7 @@
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Data.Models;
+using Gym_Management_System.Data_Access.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,17 +17,20 @@ namespace Gym_Management_System.Business.Services
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IRepository<TrainerProfile> _trainerProfileRepository;
 
         public AuthService(
             UserManager<User> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             SignInManager<User> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IRepository<TrainerProfile> trainerProfileRepository)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _trainerProfileRepository = trainerProfileRepository;
         }
 
         public async Task<GeneralResponse<AuthResponse>> RegisterAsync(RegisterRequest request, string role)
@@ -67,6 +71,20 @@ namespace Gym_Management_System.Business.Services
                 await _userManager.AddToRoleAsync(user, "Member");
             }
 
+            if (role == "Trainer")
+            {
+                var trainerProfile = new TrainerProfile
+                {
+                    UserId = user.Id,
+                    Bio = string.Empty,
+                    Specialties = string.Empty,
+                    YearsOfExperience = 0,
+                    SocialLinks = string.Empty,
+                    PhotoUrl = string.Empty
+                };
+                await _trainerProfileRepository.AddAsync(trainerProfile);
+                await _trainerProfileRepository.SaveChangesAsync();
+            }
             return GeneralResponse<AuthResponse>.Ok(new AuthResponse { Email = user.Email, Token = string.Empty }, "User registered successfully");
         }
 

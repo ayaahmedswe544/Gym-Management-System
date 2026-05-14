@@ -42,11 +42,33 @@ namespace Gym_Management_System.Controllers
             return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
         }
 
-        [HttpPost("availability")]
+        [HttpPost("add-Availability")]
         [Authorize(Roles = "Trainer")]
         public async Task<ActionResult<GeneralResponse<TrainerAvailabilityDto>>> SetAvailability([FromBody] CreateTrainerAvailabilityDto availability)
         {
             var response = await _trainerService.SetAvailabilityAsync(availability, GetUserId());
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
+        }
+
+        [HttpPut("update-availability")]
+        [Authorize(Roles = "Trainer")]
+        public async Task<ActionResult<GeneralResponse<TrainerAvailabilityDto>>> UpdateAvailability([FromBody] UpdateTrainerAvailabilityDto availability)
+        {
+            var response = await _trainerService.UpdateAvailabilityAsync(availability, GetUserId());
+            
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status204NoContent, response);
+        }
+        [HttpDelete("delete-availability/{id}")]
+        [Authorize(Roles = "Trainer")]
+        public async Task<ActionResult<GeneralResponse<string>>> DeleteAvailability(Guid id)
+        {
+            var response = await _trainerService.DeleteAvailabilityAsync(id, GetUserId());
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
+        }
+        [HttpGet("get-availabilies/{trainerId}")]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<TrainerAvailabilityDto>>>> GetAvailabilities(Guid trainerId)
+        {
+            var response = await _trainerService.GetAvailabilitiesAsync(trainerId);
             return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
         }
 

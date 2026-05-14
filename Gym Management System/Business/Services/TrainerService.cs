@@ -184,6 +184,17 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<TrainerAvailabilityDto>> SetAvailabilityAsync(CreateTrainerAvailabilityDto availabilityDto, Guid trainerId)
         {
+            var data=await _availabilityRepository.FindAsync(d=>d.DayOfWeek == availabilityDto.DayOfWeek);
+            if (data != null) {
+
+                return new GeneralResponse<TrainerAvailabilityDto>
+                {
+                    Success= false,
+                    Message="An Availability with the same day already exists"
+
+
+                };
+            }
             var availability = new TrainerAvailability
             {
                 TrainerId = trainerId,
@@ -204,6 +215,74 @@ namespace Gym_Management_System.Business.Services
             };
 
             return GeneralResponse<TrainerAvailabilityDto>.Ok(dto, "Availability saved.");
+        }
+
+
+        public async Task<GeneralResponse<TrainerAvailabilityDto>> UpdateAvailabilityAsync(UpdateTrainerAvailabilityDto availabilityDto, Guid trainerId)
+        {
+            var availability = await _availabilityRepository.GetByIdAsync(availabilityDto.Id);
+            if (availability == null)
+                return GeneralResponse<TrainerAvailabilityDto>.Failure("Availability slot not found.");
+            if (availability.TrainerId != trainerId)
+                return GeneralResponse<TrainerAvailabilityDto>.Failure("You can only update your own availability.");
+            availability.DayOfWeek = availabilityDto.DayOfWeek;
+            availability.StartTime = availabilityDto.StartTime;
+            availability.EndTime = availabilityDto.EndTime;
+            _availabilityRepository.Update(availability);
+            await _availabilityRepository.SaveChangesAsync();
+            var dto = new TrainerAvailabilityDto
+            {
+                Id = availability.Id,
+                TrainerId = availability.TrainerId,
+                DayOfWeek = availability.DayOfWeek,
+                StartTime = availability.StartTime,
+                EndTime = availability.EndTime
+            };
+            return GeneralResponse<TrainerAvailabilityDto>.Ok(dto, "Availability updated.");
+        }
+        public async Task<GeneralResponse<string>> DeleteAvailabilityAsync(Guid availabilityId, Guid trainerId)
+        {
+            var availability = await _availabilityRepository.GetByIdAsync(availabilityId);
+            if (availability == null)
+                return GeneralResponse<string>.Failure("Availability slot not found.");
+            if (availability.TrainerId != trainerId)
+                return GeneralResponse<string>.Failure("You can only delete your own availability.");
+            _availabilityRepository.Remove(availability);
+            await _availabilityRepository.SaveChangesAsync();
+            return GeneralResponse<string>.Ok("Deleted", "Availability deleted.");
+        }
+        public async Task<GeneralResponse<IEnumerable<TrainerAvailabilityDto>>> GetAvailabilitiesAsync(Guid trainerId)
+        {
+            var slots = await _availabilityRepository.FindAsync(a => a.TrainerId == trainerId);
+            if(slots== null)
+            {
+                return new GeneralResponse<IEnumerable<TrainerAvailabilityDto>>
+                {
+                    Success = false,
+                    Message = "There are no slots yet",
+                    Data = null,
+                    Errors = null
+
+                };
+            }
+          var data= slots.OrderBy(a => a.DayOfWeek).ThenBy(a => a.StartTime).Select(a => new TrainerAvailabilityDto
+            {
+                Id = a.Id,
+                TrainerId = a.TrainerId,
+                DayOfWeek = a.DayOfWeek,
+                StartTime = a.StartTime,
+                EndTime = a.EndTime
+            });
+            return new GeneralResponse<IEnumerable<TrainerAvailabilityDto>>
+            {
+                Success = true,
+                Message = "Availabilities pulled successfuly",
+                Data = data,
+                Errors = null
+
+            };
+
+
         }
     }
 }

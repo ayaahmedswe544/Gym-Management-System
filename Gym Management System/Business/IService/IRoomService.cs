@@ -8,7 +8,7 @@ namespace Gym_Management_System.Business.IService
     {
         Task<GeneralResponse<IEnumerable<RoomDto>>> GetRoomsAsync();
         Task<GeneralResponse<RoomDto>> AddRoomAsync(CreateRoomDto roomDto);
-        Task<IEnumerable<ClassDto>> GetRoomScheduleAsync(Guid roomId);
+        Task<GeneralResponse<IEnumerable<ClassDto>>> GetRoomScheduleAsync(Guid roomId);
         Task<GeneralResponse<ClassDto>> AddScheduleToRoomAsync(CreateRoomScheduleDto scheduleDto);
         Task<GeneralResponse<ClassDto>> UpdateScheduleAsync(Guid id, UpdateRoomScheduleDto updatedClassDto);
         Task<GeneralResponse<bool>> DeleteRoomAsync(Guid id);

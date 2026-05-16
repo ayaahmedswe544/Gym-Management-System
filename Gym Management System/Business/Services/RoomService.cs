@@ -69,10 +69,19 @@ namespace Gym_Management_System.Business.Services
             return GeneralResponse<RoomDto>.Ok(dto, "Room added successfully");
         }
 
-        public async Task<IEnumerable<ClassDto>> GetRoomScheduleAsync(Guid roomId)
+        public async Task<GeneralResponse<IEnumerable<ClassDto>>> GetRoomScheduleAsync(Guid roomId)
         {
             var classes = await _classRepository.FindAsync(c => c.RoomId == roomId && c.StartTime > DateTime.UtcNow);
-            return classes.OrderBy(c => c.StartTime).Select(c => new ClassDto
+            if(classes == null)
+            {
+                return new GeneralResponse<IEnumerable<ClassDto>>
+                {
+                    Success=true,
+                    Message="There is now schedule for this room"
+
+                };
+            }
+            var data= classes.OrderBy(c => c.StartTime).Select(c => new ClassDto
             {
                 Id = c.Id,
                 Title = c.Title,
@@ -83,6 +92,14 @@ namespace Gym_Management_System.Business.Services
                 CurrentBookingsCount = c.CurrentBookingsCount,
                 Status = c.Status
             });
+
+            return new GeneralResponse<IEnumerable<ClassDto>>
+            {
+                Success = true,
+                Message = "Schedule pulled successfuly",
+                Data= data
+
+            };
         }
 
         public async Task<GeneralResponse<ClassDto>> AddScheduleToRoomAsync(CreateRoomScheduleDto scheduleDto)

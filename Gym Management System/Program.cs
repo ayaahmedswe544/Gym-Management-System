@@ -53,6 +53,7 @@ namespace Gym_Management_System
             builder.Services.AddScoped<ITrainerService, TrainerService>();
             builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddScoped<IRoomService, RoomService>();
+            builder.Services.AddScoped<IClassService, ClassService>();
             #endregion
 
             // Add AutoMapper

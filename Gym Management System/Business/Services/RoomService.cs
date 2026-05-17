@@ -76,8 +76,8 @@ namespace Gym_Management_System.Business.Services
             {
                 return new GeneralResponse<IEnumerable<ClassDto>>
                 {
-                    Success=true,
-                    Message="There is now schedule for this room"
+                    Success = true,
+                    Message = "There is no schedule for this room"
 
                 };
             }

@@ -10,5 +10,7 @@ namespace Gym_Management_System.Business.DTOs.ClassDTOs
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int MaxCapacity { get; set; }
+        public Guid? TrainerId { get; set; }
+        public Guid? RoomId { get; set; }
     }
 }

@@ -18,8 +18,8 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<IEnumerable<ClassDto>>> GetAllClassesAsync()
         {
-            var classes = await _repository.GetAllAsync();
-            if(classes == null)
+            var classes = await _repository.GetAllWithIncludesAsync(c => c.Trainer!);
+            if (classes == null)
             {
                   return new GeneralResponse<IEnumerable<ClassDto>>
                 {
@@ -37,7 +37,10 @@ namespace Gym_Management_System.Business.Services
                 StartTime = c.StartTime,
                 MaxCapacity = c.MaxCapacity,
                 CurrentBookingsCount = c.CurrentBookingsCount,
-                Status = c.Status
+                Status = c.Status,
+                RoomId= c.RoomId,
+               TrainerId = c.TrainerId,
+                TrainerName = c.Trainer?.FullName ?? string.Empty
             });
             return new GeneralResponse<IEnumerable<ClassDto>>
             {
@@ -48,6 +51,35 @@ namespace Gym_Management_System.Business.Services
             };
 
 
+        }
+        public async Task<GeneralResponse<ClassDto>> GetClassByIdAsync(Guid id)
+        {
+            var gymClass = await _repository.GetByIdWithIncludesAsync(id, c => c.Trainer!);
+            if (gymClass == null)
+            {
+                return new GeneralResponse<ClassDto>
+                {
+                    Success = false,
+                    Message = "This class doesn't exist"
+
+                };
+            }
+                
+
+            return GeneralResponse<ClassDto>.Ok(new ClassDto
+            {
+                Id = gymClass.Id,
+                Title = gymClass.Title,
+                Description = gymClass.Description,
+                Type = gymClass.Type,
+                StartTime = gymClass.StartTime,
+                MaxCapacity = gymClass.MaxCapacity,
+                CurrentBookingsCount = gymClass.CurrentBookingsCount,
+                Status = gymClass.Status,
+                RoomId = gymClass.RoomId,
+                TrainerId = gymClass.TrainerId,
+                TrainerName = gymClass.Trainer?.FullName ?? string.Empty
+            });
         }
 
         public async Task<GeneralResponse<ClassDto>> CreateClassAsync(CreateClassDto request, Guid trainerId)
@@ -61,7 +93,9 @@ namespace Gym_Management_System.Business.Services
                 EndTime = request.EndTime,
                 MaxCapacity = request.MaxCapacity,
                 TrainerId = trainerId,
-                Status = ClassStatus.Scheduled
+                Status = ClassStatus.Scheduled,
+                RoomId= request.RoomId
+
             };
 
             await _repository.AddAsync(gymClass);
@@ -76,7 +110,8 @@ namespace Gym_Management_System.Business.Services
                 StartTime = gymClass.StartTime,
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
-                Status = gymClass.Status
+                Status = gymClass.Status,
+                RoomId = gymClass.RoomId
             }, "Class created successfully");
         }
         public async Task<GeneralResponse<ClassDto>> UpdateClassAsync(Guid id, UpdateClassDto request)
@@ -93,6 +128,11 @@ namespace Gym_Management_System.Business.Services
             gymClass.MaxCapacity = request.MaxCapacity;
             gymClass.Status = request.Status;
 
+            if (request.TrainerId.HasValue)
+                gymClass.TrainerId = request.TrainerId.Value;
+            if (request.RoomId.HasValue)
+                gymClass.RoomId = request.RoomId.Value;
+
             _repository.Update(gymClass);
             await _repository.SaveChangesAsync();
 
@@ -105,7 +145,8 @@ namespace Gym_Management_System.Business.Services
                 StartTime = gymClass.StartTime,
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
-                Status = gymClass.Status
+                Status = gymClass.Status,
+                RoomId= gymClass.RoomId
             }, "Class updated successfully");
         }
 

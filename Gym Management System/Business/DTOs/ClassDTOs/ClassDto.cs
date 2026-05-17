@@ -12,5 +12,8 @@ namespace Gym_Management_System.Business.DTOs.ClassDTOs
         public int MaxCapacity { get; set; }
         public int CurrentBookingsCount { get; set; }
         public ClassStatus Status { get; set; }
+        public Guid? RoomId { get; set; }
+        public Guid TrainerId { get; set; }
+        public string TrainerName { get; set; } = string.Empty;
     }
 }

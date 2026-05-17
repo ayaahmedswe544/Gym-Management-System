@@ -57,7 +57,7 @@ namespace Gym_Management_System.Controllers
         {
             var response = await _roomService.AddScheduleToRoomAsync(scheduleDto);
 
-            return StatusCode(response.Success ? StatusCodes.Status201Created : StatusCodes.Status201Created, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
 
         }
 

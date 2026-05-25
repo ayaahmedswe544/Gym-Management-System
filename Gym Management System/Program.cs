@@ -1,4 +1,5 @@
 
+using Gym_Management_System.Business.Hubs;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Business.Services;
 using Gym_Management_System.Data;
@@ -54,6 +55,7 @@ namespace Gym_Management_System
             builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddScoped<IRoomService, RoomService>();
             builder.Services.AddScoped<IClassService, ClassService>();
+            builder.Services.AddSignalR();
             #endregion
 
             // Add AutoMapper
@@ -130,7 +132,7 @@ namespace Gym_Management_System
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) // Enable Swagger in Production for testing if needed
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 
             {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
@@ -147,6 +149,7 @@ namespace Gym_Management_System
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHub<ClassHub>("/hubs/class-hub");
 
             try
             {

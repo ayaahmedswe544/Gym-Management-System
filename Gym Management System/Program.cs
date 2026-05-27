@@ -57,6 +57,7 @@ namespace Gym_Management_System
             builder.Services.AddScoped<IClassService, ClassService>();
             builder.Services.AddScoped<IClassNotificationService, ClassNotificationService>();
             builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddSignalR();
             #endregion
 

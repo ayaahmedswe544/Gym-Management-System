@@ -21,6 +21,8 @@ namespace Gym_Management_System.Data.Models
         public int MaxCapacity { get; set; }
         public int CurrentBookingsCount { get; set; }
         public ClassStatus Status { get; set; } = ClassStatus.Scheduled;
+        public decimal Price { get; set; } = 0m;
+
 
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }

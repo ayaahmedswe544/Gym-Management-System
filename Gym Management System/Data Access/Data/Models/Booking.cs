@@ -19,5 +19,8 @@ namespace Gym_Management_System.Data.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? CancelledAt { get; set; }
+        public bool PaidWithSubscription { get; set; }
+        public Guid? SubscriptionId { get; set; }
+        public Subscription? Subscription { get; set; }
     }
 }

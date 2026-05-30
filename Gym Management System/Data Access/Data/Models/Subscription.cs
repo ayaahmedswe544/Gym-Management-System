@@ -16,5 +16,7 @@ namespace Gym_Management_System.Data.Models
 
         public int? ClassesRemaining { get; set; }
         public bool IsActive { get; set; } = true;
+        public Guid? PaymentId { get; set; }
+        public Payment? Payment { get; set; }
     }
 }

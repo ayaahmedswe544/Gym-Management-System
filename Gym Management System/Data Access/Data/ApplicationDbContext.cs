@@ -1,4 +1,5 @@
 ﻿using Gym_Management_System.Data.Models;
+using Gym_Management_System.Data_Access.Data.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,8 @@ namespace Gym_Management_System.Data
         public DbSet<TrainerAvailability> TrainerAvailabilities { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<PromoCode> PromoCodes { get; set; }
+        public DbSet<PromoCodeUsage> PromoCodeUsages { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -37,14 +40,6 @@ namespace Gym_Management_System.Data
             builder.Entity<Payment>().Property(e => e.Type).HasConversion<string>();
             builder.Entity<TrainerAvailability>().Property(e => e.DayOfWeek).HasConversion<string>();
 
-
-            builder.Entity<Payment>()
-            .Property(p => p.Amount)
-            .HasPrecision(18, 2);
-
-            builder.Entity<PromoCode>()
-              .Property(p => p.DiscountPercentage)
-                .HasPrecision(5, 2);
 
             builder.Entity<GymClass>()
                 .HasOne(g => g.Trainer)
@@ -70,6 +65,40 @@ namespace Gym_Management_System.Data
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Subscription>()
+                .HasOne(s => s.Payment)
+                .WithOne(p => p.Subscription!)
+                .HasForeignKey<Subscription>(s => s.PaymentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Booking>()
+                .HasOne(b => b.Subscription)
+                .WithMany()
+                .HasForeignKey(b => b.SubscriptionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Payment>()
+                .HasOne(p => p.PromoCode)
+                .WithMany()
+                .HasForeignKey(p => p.PromoCodeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<PromoCodeUsage>()
+                .HasOne(u => u.PromoCode)
+                .WithMany()
+                .HasForeignKey(u => u.PromoCodeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<PromoCodeUsage>()
+                .HasOne(u => u.User)
+                .WithMany()
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<PromoCodeUsage>()
+                .HasIndex(u => new { u.PromoCodeId, u.UserId })
+                .IsUnique();
+
             builder.Entity<Review>()
                 .HasOne(r => r.User)
                 .WithMany()
@@ -93,6 +122,11 @@ namespace Gym_Management_System.Data
                 .WithMany()
                 .HasForeignKey(ta => ta.TrainerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<GymClass>().Property(e => e.Price).HasPrecision(18, 2);
+            builder.Entity<Payment>().Property(e => e.Amount).HasPrecision(18, 2);
+            builder.Entity<Payment>().Property(e => e.OriginalAmount).HasPrecision(18, 2);
+            builder.Entity<PromoCode>().Property(e => e.DiscountPercentage).HasPrecision(18, 2);
         }
     }
 }

@@ -16,5 +16,11 @@ namespace Gym_Management_System.Data.Models
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
 
         public DateTime? PaidAt { get; set; }
+
+        public decimal OriginalAmount { get; set; }
+        public Guid? PromoCodeId { get; set; }
+        public PromoCode? PromoCode { get; set; }
+        public Guid? SubscriptionId { get; set; }
+        public Subscription? Subscription { get; set; }
     }
 }

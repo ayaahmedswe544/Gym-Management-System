@@ -9,5 +9,7 @@ namespace Gym_Management_System.Business.IService
         Task<GeneralResponse<PromoCodeDto>> UpdatePromoAsync(Guid id, UpdatePromoCodeDto updatedPromoDto);
         Task<GeneralResponse<PromoCodeDto>> ValidatePromoAsync(string code);
         Task<GeneralResponse<PromoCodeDto>> ApplyPromoAsync(string code, Guid userId);
+        Task<GeneralResponse<bool>> DeletePromoAsync(Guid id);
+
     }
 }

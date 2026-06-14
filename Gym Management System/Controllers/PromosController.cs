@@ -38,12 +38,22 @@ namespace Gym_Management_System.Controllers
 
         [HttpPost("validate")]
         [Authorize(Roles = "Member,Admin")]
-        public async Task<ActionResult<GeneralResponse<object>>> ValidatePromo([FromBody] string code)
+        public async Task<ActionResult<GeneralResponse<PromoCodeDto>>> ValidatePromo([FromBody] string code)
         {
             var response = await _promoService.ValidatePromoAsync(code);
 
            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
             
+        }
+
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<GeneralResponse<bool>>> DeletePromo(Guid id)
+        {
+            var response = await _promoService.DeletePromoAsync(id);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
+
         }
     }
 }

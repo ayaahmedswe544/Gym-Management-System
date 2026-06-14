@@ -100,6 +100,18 @@ namespace Gym_Management_System.Business.Services
 
             return (promo, null);
         }
+
+        public async Task<GeneralResponse<bool>> DeletePromoAsync(Guid id)
+        {
+            var promo = await _promoRepository.GetByIdAsync(id);
+            if (promo == null)
+                return GeneralResponse<bool>.Failure("Promo code not found.");
+
+            _promoRepository.Remove(promo);
+            await _promoRepository.SaveChangesAsync();
+
+            return GeneralResponse<bool>.Ok(true, "Promo code deleted.");
+        }
         private static PromoCodeDto MapToDto(PromoCode p) => new()
         {
             Id = p.Id,

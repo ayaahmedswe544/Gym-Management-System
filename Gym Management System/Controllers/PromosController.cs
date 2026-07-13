@@ -18,7 +18,14 @@ namespace Gym_Management_System.Controllers
         {
             _promoService = promoService;
         }
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<PromoCodeDto>>>> GetPromos([FromQuery] string? code = null, [FromQuery] bool? isActive = null)
+        {
+            var response = await _promoService.GetPromosAsync(code, isActive);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
 
+        }
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<GeneralResponse<PromoCodeDto>>> CreatePromo([FromBody] CreatePromoCodeDto promoCodeDto)

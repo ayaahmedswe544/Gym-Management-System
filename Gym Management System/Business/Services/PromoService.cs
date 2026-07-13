@@ -121,6 +121,35 @@ namespace Gym_Management_System.Business.Services
             ValidUntil = p.ValidUntil,
             MaxUses = p.MaxUses
         };
+
+        public async Task<GeneralResponse<IEnumerable<PromoCodeDto>>> GetPromosAsync(string? code = null, bool? isActive = null)
+        {
+            var query = _db.PromoCodes.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                query = query.Where(p => p.Code.Contains(code));
+            }
+
+            if (isActive.HasValue)
+            {
+                var now = DateTime.UtcNow;
+                if (isActive.Value)
+                {
+                    query = query.Where(p => p.ValidFrom <= now && p.ValidUntil >= now &&
+                        _db.PromoCodeUsages.Count(u => u.PromoCodeId == p.Id) < p.MaxUses);
+                }
+                else
+                {
+                    query = query.Where(p => p.ValidFrom > now || p.ValidUntil < now ||
+                        _db.PromoCodeUsages.Count(u => u.PromoCodeId == p.Id) >= p.MaxUses);
+                }
+            }
+
+            var promos = await query.ToListAsync();
+            var dtos = promos.Select(MapToDto);
+            return GeneralResponse<IEnumerable<PromoCodeDto>>.Ok(dtos, "Promos retrieved successfully.");
+        }
     }
 
 }

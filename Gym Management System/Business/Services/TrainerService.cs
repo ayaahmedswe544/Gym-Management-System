@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.ClassDTOs;
+using Gym_Management_System.Business.DTOs.ClassDTOs;
 using Gym_Management_System.Business.DTOs.TrainerDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -56,12 +56,13 @@ namespace Gym_Management_System.Business.Services
                         Specialties = p.Specialties,
                         YearsOfExperience = p.YearsOfExperience,
                         SocialLinks = p.SocialLinks,
-                        PhotoUrl=p.PhotoUrl
+                        PhotoUrl = p.PhotoUrl,
+                        PhoneNumber = user?.PhoneNumber ?? string.Empty
                     });
                 }
                 return new GeneralResponse<List<TrainerProfileDto>>
                 {
-                    Success = false,
+                    Success = true,
                     Message = "Trainers Data pulled successfully",
                     Data = dtos,
                     Errors = null
@@ -114,7 +115,8 @@ namespace Gym_Management_System.Business.Services
                     Specialties = profile.Specialties,
                     YearsOfExperience = profile.YearsOfExperience,
                     SocialLinks = profile.SocialLinks,
-                    PhotoUrl=profile.PhotoUrl
+                    PhotoUrl = profile.PhotoUrl,
+                    PhoneNumber = user?.PhoneNumber ?? string.Empty
                 },
                 UpcomingClasses = upcomingClasses
             };
@@ -176,7 +178,8 @@ namespace Gym_Management_System.Business.Services
                 Specialties = profile.Specialties,
                 YearsOfExperience = profile.YearsOfExperience,
                 SocialLinks = profile.SocialLinks,
-                PhotoUrl=profile.PhotoUrl ?? string.Empty
+                PhotoUrl = profile.PhotoUrl ?? string.Empty,
+                PhoneNumber = user?.PhoneNumber ?? string.Empty
             };
 
             return GeneralResponse<TrainerProfileDto>.Ok(dto, "Profile updated.");
@@ -184,15 +187,13 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<TrainerAvailabilityDto>> SetAvailabilityAsync(CreateTrainerAvailabilityDto availabilityDto, Guid trainerId)
         {
-            var data=await _availabilityRepository.FindAsync(d=>d.DayOfWeek == availabilityDto.DayOfWeek);
-            if (data != null) {
+            var existingData = await _availabilityRepository.FindAsync(d => d.TrainerId == trainerId && d.DayOfWeek == availabilityDto.DayOfWeek);
+            if (existingData.Any()) {
 
                 return new GeneralResponse<TrainerAvailabilityDto>
                 {
-                    Success= false,
-                    Message="An Availability with the same day already exists"
-
-
+                    Success = false,
+                    Message = "An Availability with the same day already exists"
                 };
             }
             var availability = new TrainerAvailability

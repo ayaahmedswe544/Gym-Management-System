@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.AuthDTOs;
+using Gym_Management_System.Business.DTOs.AuthDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Data.Models;
@@ -45,6 +45,7 @@ namespace Gym_Management_System.Business.Services
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = request.Email,
                 FullName = request.FullName,
+                PhoneNumber = request.PhoneNumber,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -85,7 +86,7 @@ namespace Gym_Management_System.Business.Services
                 await _trainerProfileRepository.AddAsync(trainerProfile);
                 await _trainerProfileRepository.SaveChangesAsync();
             }
-            return GeneralResponse<AuthResponse>.Ok(new AuthResponse { Email = user.Email, Token = string.Empty }, "User registered successfully");
+            return GeneralResponse<AuthResponse>.Ok(new AuthResponse { Email = user.Email, PhoneNumber = user.PhoneNumber ?? string.Empty, Token = string.Empty }, "User registered successfully");
         }
 
         public async Task<GeneralResponse<AuthResponse>> LoginAsync(LoginRequest request)
@@ -102,6 +103,11 @@ namespace Gym_Management_System.Business.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
+                if (!string.IsNullOrEmpty(user.PhoneNumber))
+                {
+                    authClaims.Add(new Claim(ClaimTypes.MobilePhone, user.PhoneNumber));
+                }
+
                 foreach (var userRole in userRoles)
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, userRole));
@@ -113,7 +119,8 @@ namespace Gym_Management_System.Business.Services
                 {
                     Token = new JwtSecurityTokenHandler().WriteToken(token),
                     Expiration = token.ValidTo,
-                    Email = user.Email!
+                    Email = user.Email!,
+                    PhoneNumber = user.PhoneNumber ?? string.Empty
                 }, "Login successful");
             }
             return GeneralResponse<AuthResponse>.Failure("Invalid credentials");

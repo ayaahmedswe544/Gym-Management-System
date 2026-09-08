@@ -1,4 +1,4 @@
-﻿namespace Gym_Management_System.Business.DTOs.TrainerDTOs
+namespace Gym_Management_System.Business.DTOs.TrainerDTOs
 {
     public class TrainerProfileDto
     {
@@ -10,5 +10,6 @@
         public int YearsOfExperience { get; set; }
         public string SocialLinks { get; set; } = string.Empty;
         public string? PhotoUrl { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

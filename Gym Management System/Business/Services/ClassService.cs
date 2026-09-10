@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.ClassDTOs;
+using Gym_Management_System.Business.DTOs.ClassDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Data.Enums;
@@ -84,6 +84,15 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<ClassDto>> CreateClassAsync(CreateClassDto request, Guid trainerId)
         {
+            if (request.RoomId.HasValue)
+            {
+                var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime);
+                if (hasConflict)
+                {
+                    return GeneralResponse<ClassDto>.Failure("Room is already booked for another class at this time");
+                }
+            }
+
             var gymClass = new GymClass
             {
                 Title = request.Title,
@@ -94,8 +103,7 @@ namespace Gym_Management_System.Business.Services
                 MaxCapacity = request.MaxCapacity,
                 TrainerId = trainerId,
                 Status = ClassStatus.Scheduled,
-                RoomId= request.RoomId
-
+                RoomId = request.RoomId
             };
 
             await _repository.AddAsync(gymClass);
@@ -119,6 +127,15 @@ namespace Gym_Management_System.Business.Services
             var gymClass = await _repository.GetByIdAsync(id);
             if (gymClass == null)
                 return GeneralResponse<ClassDto>.Failure("Class not found");
+
+            if (request.RoomId.HasValue)
+            {
+                var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime, id);
+                if (hasConflict)
+                {
+                    return GeneralResponse<ClassDto>.Failure("Room is already booked for another class at this time");
+                }
+            }
 
             gymClass.Title = request.Title;
             gymClass.Description = request.Description;
@@ -146,8 +163,24 @@ namespace Gym_Management_System.Business.Services
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
                 Status = gymClass.Status,
-                RoomId= gymClass.RoomId
+                RoomId = gymClass.RoomId
             }, "Class updated successfully");
+        }
+
+        private async Task<bool> HasRoomConflictAsync(Guid roomId, DateTime startTime, DateTime endTime, Guid? excludeClassId = null)
+        {
+            var classes = await _repository.FindAsync(c => c.RoomId == roomId);
+            
+            var conflictingClasses = classes.Where(c => 
+                c.StartTime < endTime && 
+                c.EndTime > startTime);
+            
+            if (excludeClassId.HasValue)
+            {
+                conflictingClasses = conflictingClasses.Where(c => c.Id != excludeClassId.Value);
+            }
+            
+            return conflictingClasses.Any();
         }
 
         public async Task<GeneralResponse<bool>> DeleteClassAsync(Guid id)

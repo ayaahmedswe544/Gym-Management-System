@@ -23,7 +23,6 @@ namespace Gym_Management_System
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Configure Serilog
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Configuration)
                 .Enrich.FromLogContext()
@@ -32,8 +31,6 @@ namespace Gym_Management_System
                 .CreateLogger();
 
             builder.Host.UseSerilog();
-
-            // Add services to the container.
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -61,11 +58,7 @@ namespace Gym_Management_System
             builder.Services.AddScoped<IPromoService, PromoService>();
             builder.Services.AddSignalR();
             #endregion
-
-            // Add AutoMapper
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-            // Add Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -89,7 +82,6 @@ namespace Gym_Management_System
 
             builder.Services.AddAuthorization();
 
-            // CORS Configuration
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
@@ -134,8 +126,6 @@ namespace Gym_Management_System
             });
 
             var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 
             {
                 app.UseSwagger();

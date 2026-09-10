@@ -35,6 +35,7 @@ namespace Gym_Management_System.Business.Services
                 Description = c.Description,
                 Type = c.Type,
                 StartTime = c.StartTime,
+                EndTime= c.EndTime,
                 MaxCapacity = c.MaxCapacity,
                 CurrentBookingsCount = c.CurrentBookingsCount,
                 Status = c.Status,
@@ -73,6 +74,7 @@ namespace Gym_Management_System.Business.Services
                 Description = gymClass.Description,
                 Type = gymClass.Type,
                 StartTime = gymClass.StartTime,
+                EndTime = gymClass.EndTime, 
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
                 Status = gymClass.Status,
@@ -91,6 +93,12 @@ namespace Gym_Management_System.Business.Services
                 {
                     return GeneralResponse<ClassDto>.Failure("Room is already booked for another class at this time");
                 }
+            }
+
+            var trainerConflict = await GetTrainerConflictAsync(trainerId, request.StartTime, request.EndTime);
+            if (trainerConflict != null)
+            {
+                return GeneralResponse<ClassDto>.FailureWithData($"Trainer is already scheduled for another class at this time: {trainerConflict.Title}", trainerConflict);
             }
 
             var gymClass = new GymClass
@@ -116,6 +124,7 @@ namespace Gym_Management_System.Business.Services
                 Description = gymClass.Description,
                 Type = gymClass.Type,
                 StartTime = gymClass.StartTime,
+                EndTime = gymClass.EndTime,
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
                 Status = gymClass.Status,
@@ -181,6 +190,33 @@ namespace Gym_Management_System.Business.Services
             }
             
             return conflictingClasses.Any();
+        }
+
+        private async Task<ClassDto?> GetTrainerConflictAsync(Guid trainerId, DateTime startTime, DateTime endTime)
+        {
+            var classes = await _repository.FindAsync(c => c.TrainerId == trainerId);
+            
+            var conflictingClass = classes.FirstOrDefault(c => 
+                c.StartTime < endTime && 
+                c.EndTime > startTime);
+            
+            if (conflictingClass == null)
+                return null;
+
+            return new ClassDto
+            {
+                Id = conflictingClass.Id,
+                Title = conflictingClass.Title,
+                Description = conflictingClass.Description,
+                Type = conflictingClass.Type,
+                StartTime = conflictingClass.StartTime,
+                EndTime = conflictingClass.EndTime,
+                MaxCapacity = conflictingClass.MaxCapacity,
+                CurrentBookingsCount = conflictingClass.CurrentBookingsCount,
+                Status = conflictingClass.Status,
+                RoomId = conflictingClass.RoomId,
+                TrainerId = conflictingClass.TrainerId
+            };
         }
 
         public async Task<GeneralResponse<bool>> DeleteClassAsync(Guid id)

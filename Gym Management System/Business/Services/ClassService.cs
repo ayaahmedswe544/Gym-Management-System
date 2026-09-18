@@ -10,10 +10,12 @@ namespace Gym_Management_System.Business.Services
     public class ClassService:IClassService
     {
         private readonly IRepository<GymClass> _repository;
+        private readonly IRepository<User> _userRepository;
 
-        public ClassService(IRepository<GymClass> repository)
+        public ClassService(IRepository<GymClass> repository, IRepository<User> userRepository)
         {
             _repository = repository;
+            _userRepository = userRepository;
         }
 
         public async Task<GeneralResponse<IEnumerable<ClassDto>>> GetAllClassesAsync()
@@ -86,6 +88,12 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<ClassDto>> CreateClassAsync(CreateClassDto request, Guid trainerId)
         {
+            var trainer = await _userRepository.GetByIdAsync(trainerId);
+            if (trainer == null)
+            {
+                return GeneralResponse<ClassDto>.Failure("Trainer not found");
+            }
+
             if (request.RoomId.HasValue)
             {
                 var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime);
@@ -146,6 +154,23 @@ namespace Gym_Management_System.Business.Services
                 }
             }
 
+            var effectiveTrainerId = request.TrainerId ?? gymClass.TrainerId;
+            
+            if (request.TrainerId.HasValue)
+            {
+                var trainer = await _userRepository.GetByIdAsync(request.TrainerId.Value);
+                if (trainer == null)
+                {
+                    return GeneralResponse<ClassDto>.Failure("Trainer not found");
+                }
+            }
+
+            var trainerConflict = await GetTrainerConflictAsync(effectiveTrainerId, request.StartTime, request.EndTime, id);
+            if (trainerConflict != null)
+            {
+                return GeneralResponse<ClassDto>.FailureWithData($"Trainer is already scheduled for another class at this time: {trainerConflict.Title}", trainerConflict);
+            }
+
             gymClass.Title = request.Title;
             gymClass.Description = request.Description;
             gymClass.Type = request.Type;
@@ -169,10 +194,13 @@ namespace Gym_Management_System.Business.Services
                 Description = gymClass.Description,
                 Type = gymClass.Type,
                 StartTime = gymClass.StartTime,
+                EndTime = gymClass.EndTime,
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
                 Status = gymClass.Status,
-                RoomId = gymClass.RoomId
+                RoomId = gymClass.RoomId,
+                TrainerId = gymClass.TrainerId,
+                TrainerName = string.Empty
             }, "Class updated successfully");
         }
 
@@ -192,13 +220,14 @@ namespace Gym_Management_System.Business.Services
             return conflictingClasses.Any();
         }
 
-        private async Task<ClassDto?> GetTrainerConflictAsync(Guid trainerId, DateTime startTime, DateTime endTime)
+        private async Task<ClassDto?> GetTrainerConflictAsync(Guid trainerId, DateTime startTime, DateTime endTime, Guid? excludeClassId = null)
         {
             var classes = await _repository.FindAsync(c => c.TrainerId == trainerId);
             
             var conflictingClass = classes.FirstOrDefault(c => 
                 c.StartTime < endTime && 
-                c.EndTime > startTime);
+                c.EndTime > startTime &&
+                (!excludeClassId.HasValue || c.Id != excludeClassId.Value));
             
             if (conflictingClass == null)
                 return null;

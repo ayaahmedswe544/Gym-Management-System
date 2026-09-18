@@ -96,12 +96,27 @@ namespace Gym_Management_System.Business.Services
                 return GeneralResponse<ClassDto>.Failure("Trainer not found");
             }
 
+            if (request.StartTime >= request.EndTime)
+            {
+                return GeneralResponse<ClassDto>.Failure("Start time must be before end time");
+            }
+
+            if (request.MaxCapacity <= 0)
+            {
+                return GeneralResponse<ClassDto>.Failure("Max capacity must be greater than zero");
+            }
+
             if (request.RoomId.HasValue)
             {
                 var room = await _roomRepository.GetByIdAsync(request.RoomId.Value);
                 if (room == null)
                 {
                     return GeneralResponse<ClassDto>.Failure("Room not found");
+                }
+
+                if (room.Capacity < request.MaxCapacity)
+                {
+                    return GeneralResponse<ClassDto>.Failure($"Room capacity ({room.Capacity}) is less than class max capacity ({request.MaxCapacity})");
                 }
 
                 var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime);
@@ -153,12 +168,28 @@ namespace Gym_Management_System.Business.Services
             if (gymClass == null)
                 return GeneralResponse<ClassDto>.Failure("Class not found");
 
+            if (request.StartTime >= request.EndTime)
+            {
+                return GeneralResponse<ClassDto>.Failure("Start time must be before end time");
+            }
+
+            if (request.MaxCapacity <= 0)
+            {
+                return GeneralResponse<ClassDto>.Failure("Max capacity must be greater than zero");
+            }
+
             if (request.RoomId.HasValue)
             {
                 var room = await _roomRepository.GetByIdAsync(request.RoomId.Value);
                 if (room == null)
                 {
                     return GeneralResponse<ClassDto>.Failure("Room not found");
+                }
+
+                var effectiveMaxCapacity = request.MaxCapacity > 0 ? request.MaxCapacity : gymClass.MaxCapacity;
+                if (room.Capacity < effectiveMaxCapacity)
+                {
+                    return GeneralResponse<ClassDto>.Failure($"Room capacity ({room.Capacity}) is less than class max capacity ({effectiveMaxCapacity})");
                 }
 
                 var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime, id);
@@ -258,7 +289,8 @@ namespace Gym_Management_System.Business.Services
                 CurrentBookingsCount = conflictingClass.CurrentBookingsCount,
                 Status = conflictingClass.Status,
                 RoomId = conflictingClass.RoomId,
-                TrainerId = conflictingClass.TrainerId
+                TrainerId = conflictingClass.TrainerId,
+                TrainerName = string.Empty
             };
         }
 
@@ -270,12 +302,20 @@ namespace Gym_Management_System.Business.Services
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Data=false,
+                    Data = false,
                     Message = "the class is not deleted"
-
                 };
             }
-                
+
+            if (gymClass.CurrentBookingsCount > 0)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = $"Cannot delete class with {gymClass.CurrentBookingsCount} existing bookings. Cancel bookings first."
+                };
+            }
 
             _repository.Remove(gymClass);
             await _repository.SaveChangesAsync();
@@ -283,9 +323,8 @@ namespace Gym_Management_System.Business.Services
             return new GeneralResponse<bool>
             {
                 Success = true,
-                Data=true,
-                Message = "Tthe items is deleted successfuly"
-
+                Data = true,
+                Message = "The item is deleted successfully"
             };
         }
     }

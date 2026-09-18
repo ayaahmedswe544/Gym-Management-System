@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Gym_Management_System.Business.DTOs.ReviewDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -58,9 +58,8 @@ namespace Gym_Management_System.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<GeneralResponse>> DeleteReview(Guid id)
         {
-            var response = await _reviewService.DeleteReviewAsync(id);
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
-
+            var response = await _reviewService.DeleteReviewAsync(id, GetUserId());
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
         }
 
         private Guid GetUserId()

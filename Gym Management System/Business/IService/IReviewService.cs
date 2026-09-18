@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.ReviewDTOs;
+using Gym_Management_System.Business.DTOs.ReviewDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 
 namespace Gym_Management_System.Business.IService
@@ -9,6 +9,6 @@ namespace Gym_Management_System.Business.IService
         Task<GeneralResponse<ReviewDto>> AddTrainerReviewAsync(CreateReviewDto reviewDto, Guid userId);
         Task<GeneralResponse<IEnumerable<ReviewDto>>> GetClassReviewsAsync(Guid classId);
         Task<GeneralResponse<IEnumerable<ReviewDto>>> GetTrainerReviewsAsync(Guid trainerId);
-        Task<GeneralResponse<bool>> DeleteReviewAsync(Guid id);
+        Task<GeneralResponse<bool>> DeleteReviewAsync(Guid id, Guid userId);
     }
 }

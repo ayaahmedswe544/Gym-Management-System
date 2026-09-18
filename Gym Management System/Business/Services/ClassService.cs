@@ -11,11 +11,13 @@ namespace Gym_Management_System.Business.Services
     {
         private readonly IRepository<GymClass> _repository;
         private readonly IRepository<User> _userRepository;
+        private readonly IRepository<Room> _roomRepository;
 
-        public ClassService(IRepository<GymClass> repository, IRepository<User> userRepository)
+        public ClassService(IRepository<GymClass> repository, IRepository<User> userRepository, IRepository<Room> roomRepository)
         {
             _repository = repository;
             _userRepository = userRepository;
+            _roomRepository = roomRepository;
         }
 
         public async Task<GeneralResponse<IEnumerable<ClassDto>>> GetAllClassesAsync()
@@ -96,6 +98,12 @@ namespace Gym_Management_System.Business.Services
 
             if (request.RoomId.HasValue)
             {
+                var room = await _roomRepository.GetByIdAsync(request.RoomId.Value);
+                if (room == null)
+                {
+                    return GeneralResponse<ClassDto>.Failure("Room not found");
+                }
+
                 var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime);
                 if (hasConflict)
                 {
@@ -147,6 +155,12 @@ namespace Gym_Management_System.Business.Services
 
             if (request.RoomId.HasValue)
             {
+                var room = await _roomRepository.GetByIdAsync(request.RoomId.Value);
+                if (room == null)
+                {
+                    return GeneralResponse<ClassDto>.Failure("Room not found");
+                }
+
                 var hasConflict = await HasRoomConflictAsync(request.RoomId.Value, request.StartTime, request.EndTime, id);
                 if (hasConflict)
                 {

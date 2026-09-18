@@ -18,19 +18,22 @@ namespace Gym_Management_System.Business.Services
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IRepository<TrainerProfile> _trainerProfileRepository;
+        private readonly IRepository<User> _userRepository;
 
         public AuthService(
             UserManager<User> userManager,
             RoleManager<IdentityRole<Guid>> roleManager,
             SignInManager<User> signInManager,
             IConfiguration configuration,
-            IRepository<TrainerProfile> trainerProfileRepository)
+            IRepository<TrainerProfile> trainerProfileRepository,
+            IRepository<User> userRepository)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _trainerProfileRepository = trainerProfileRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<GeneralResponse<AuthResponse>> RegisterAsync(RegisterRequest request, string role)
@@ -124,6 +127,50 @@ namespace Gym_Management_System.Business.Services
                 }, "Login successful");
             }
             return GeneralResponse<AuthResponse>.Failure("Invalid credentials");
+        }
+
+        public async Task<GeneralResponse<ProfileDto>> GetProfileAsync(Guid userId)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return GeneralResponse<ProfileDto>.Failure("User not found");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var primaryRole = roles.FirstOrDefault() ?? "Member";
+            var isTrainer = roles.Contains("Trainer");
+
+            TrainerProfileInfo? trainerProfileInfo = null;
+            if (isTrainer)
+            {
+                var trainerProfile = await _trainerProfileRepository.GetByIdAsync(userId);
+                if (trainerProfile != null)
+                {
+                    trainerProfileInfo = new TrainerProfileInfo
+                    {
+                        Bio = trainerProfile.Bio ?? string.Empty,
+                        Specialties = trainerProfile.Specialties ?? string.Empty,
+                        YearsOfExperience = trainerProfile.YearsOfExperience,
+                        SocialLinks = trainerProfile.SocialLinks ?? string.Empty,
+                        PhotoUrl = trainerProfile.PhotoUrl ?? string.Empty
+                    };
+                }
+            }
+
+            var profile = new ProfileDto
+            {
+                Id = user.Id,
+                Email = user.Email ?? string.Empty,
+                FullName = user.FullName ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                CreatedAt = user.CreatedAt,
+                Role = primaryRole,
+                IsTrainer = isTrainer,
+                TrainerProfile = trainerProfileInfo
+            };
+
+            return GeneralResponse<ProfileDto>.Ok(profile, "Profile retrieved successfully");
         }
 
         private JwtSecurityToken GetToken(List<Claim> authClaims)

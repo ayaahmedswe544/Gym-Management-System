@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.AuthDTOs;
+using Gym_Management_System.Business.DTOs.AuthDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Microsoft.AspNetCore.Identity.Data;
 using LoginRequest = Gym_Management_System.Business.DTOs.AuthDTOs.LoginRequest;
@@ -10,5 +10,6 @@ namespace Gym_Management_System.Business.IService
     {
         Task<GeneralResponse<AuthResponse>> RegisterAsync(RegisterRequest request, string role);
         Task<GeneralResponse<AuthResponse>> LoginAsync(LoginRequest request);
+        Task<GeneralResponse<ProfileDto>> GetProfileAsync(Guid userId);
     }
 }

@@ -1,6 +1,8 @@
-﻿using Gym_Management_System.Business.IService;
+using Gym_Management_System.Business.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Gym_Management_System.Business.DTOs.AuthDTOs;
 
 namespace Gym_Management_System.Controllers
@@ -47,6 +49,20 @@ namespace Gym_Management_System.Controllers
             var result = await _authService.LoginAsync(request);
             if (!result.Success) return Unauthorized(result);
             return Ok(result);
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _authService.GetProfileAsync(userId);
+            return StatusCode(result.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, result);
         }
     }
 }

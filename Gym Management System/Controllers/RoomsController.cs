@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Gym_Management_System.Business.DTOs.ClassDTOs;
 using Gym_Management_System.Business.DTOs.RoomDTOs;
 using Gym_Management_System.Business.GeneralResponse;
@@ -34,7 +34,7 @@ namespace Gym_Management_System.Controllers
         {
             var response = await _roomService.AddRoomAsync(roomDto);
             return StatusCode(response.Success ? StatusCodes.Status201Created : StatusCodes.Status400BadRequest, response);
-           
+          
         }
 
         [HttpPut("{id}")]
@@ -50,24 +50,6 @@ namespace Gym_Management_System.Controllers
             var response = await _roomService.GetRoomScheduleAsync(id);
 
             return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
-        }
-
-        [HttpPost("schedule")]
-        public async Task<ActionResult<GeneralResponse<ClassDto>>> AddScheduleToRoom([FromBody] CreateRoomScheduleDto scheduleDto)
-        {
-            var response = await _roomService.AddScheduleToRoomAsync(scheduleDto);
-
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
-
-        }
-
-        [HttpPut("schedule/{id}")]
-        public async Task<ActionResult<GeneralResponse<ClassDto>>> UpdateSchedule(Guid id, [FromBody] UpdateRoomScheduleDto updatedClassDto)
-        {
-            var response = await _roomService.UpdateScheduleAsync(id, updatedClassDto);
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
-
-
         }
 
         [HttpDelete("{id}")]

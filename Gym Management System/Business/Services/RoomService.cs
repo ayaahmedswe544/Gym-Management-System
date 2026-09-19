@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.ClassDTOs;
+using Gym_Management_System.Business.DTOs.ClassDTOs;
 using Gym_Management_System.Business.DTOs.RoomDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -45,7 +45,6 @@ namespace Gym_Management_System.Business.Services
                 Data=data
 
             };
-            
         }
 
         public async Task<GeneralResponse<RoomDto>> AddRoomAsync(CreateRoomDto roomDto)
@@ -102,66 +101,6 @@ namespace Gym_Management_System.Business.Services
             };
         }
 
-        public async Task<GeneralResponse<ClassDto>> AddScheduleToRoomAsync(CreateRoomScheduleDto scheduleDto)
-        {
-            var gymClass = new GymClass
-            {
-                RoomId = scheduleDto.RoomId,
-                TrainerId = scheduleDto.TrainerId,
-                Title = scheduleDto.Title,
-                Description = scheduleDto.Description,
-                Type = scheduleDto.Type,
-                StartTime = scheduleDto.StartTime,
-                EndTime = scheduleDto.EndTime,
-                MaxCapacity = scheduleDto.MaxCapacity,
-                Status = ClassStatus.Scheduled
-            };
-
-            await _classRepository.AddAsync(gymClass);
-            await _classRepository.SaveChangesAsync();
-
-            var dto = new ClassDto
-            {
-                Id = gymClass.Id,
-                Title = gymClass.Title,
-                Description = gymClass.Description,
-                Type = gymClass.Type,
-                StartTime = gymClass.StartTime,
-                MaxCapacity = gymClass.MaxCapacity,
-                CurrentBookingsCount = gymClass.CurrentBookingsCount,
-                Status = gymClass.Status
-            };
-            return GeneralResponse<ClassDto>.Ok(dto, "Schedule added to room.");
-        }
-
-        public async Task<GeneralResponse<ClassDto>> UpdateScheduleAsync(Guid id, UpdateRoomScheduleDto updatedClassDto)
-        {
-            var gymClass = await _classRepository.GetByIdAsync(id);
-            if (gymClass == null) return GeneralResponse<ClassDto>.Failure("Class not found.");
-
-            gymClass.StartTime = updatedClassDto.StartTime;
-            gymClass.EndTime = updatedClassDto.EndTime;
-            gymClass.RoomId = updatedClassDto.RoomId;
-            gymClass.MaxCapacity = updatedClassDto.MaxCapacity;
-            gymClass.Title = updatedClassDto.Title;
-
-            _classRepository.Update(gymClass);
-            await _classRepository.SaveChangesAsync();
-
-            var dto = new ClassDto
-            {
-                Id = gymClass.Id,
-                Title = gymClass.Title,
-                Description = gymClass.Description,
-                Type = gymClass.Type,
-                StartTime = gymClass.StartTime,
-                MaxCapacity = gymClass.MaxCapacity,
-                CurrentBookingsCount = gymClass.CurrentBookingsCount,
-                Status = gymClass.Status
-            };
-
-            return GeneralResponse<ClassDto>.Ok(dto, "Schedule updated.");
-        }
         public async Task<GeneralResponse<bool>> DeleteRoomAsync(Guid id)
         {
             var room = await _roomRepository.GetByIdAsync(id);

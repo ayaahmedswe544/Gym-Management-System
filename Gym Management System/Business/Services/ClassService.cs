@@ -159,7 +159,9 @@ namespace Gym_Management_System.Business.Services
                 MaxCapacity = gymClass.MaxCapacity,
                 CurrentBookingsCount = gymClass.CurrentBookingsCount,
                 Status = gymClass.Status,
-                RoomId = gymClass.RoomId
+                RoomId = gymClass.RoomId,
+                TrainerId = gymClass.TrainerId,
+                TrainerName = trainer.FullName ?? string.Empty
             }, "Class created successfully");
         }
         public async Task<GeneralResponse<ClassDto>> UpdateClassAsync(Guid id, UpdateClassDto request)

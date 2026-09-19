@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.BookingDTOs;
+using Gym_Management_System.Business.DTOs.BookingDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Data;
@@ -116,7 +116,7 @@ namespace Gym_Management_System.Business.Services
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<BookingDto>>> GetMyBookingsAsync(Guid userId)
+        public async Task<GeneralResponse<IEnumerable<BookingDto>>> GetBookingsByUserIdAsync(Guid userId)
         {
             var bookings = await _db.Bookings
                 .Where(b => b.UserId == userId)
@@ -149,25 +149,6 @@ namespace Gym_Management_System.Business.Services
                 Status = booking.Status,
                 CreatedAt = booking.CreatedAt
             });
-        }
-
-        public async Task<GeneralResponse<IEnumerable<BookingDto>>> GetBookingsByUserIdAsync(Guid userId)
-        {
-            var bookings = await _db.Bookings
-                .Where(b => b.UserId == userId)
-                .OrderByDescending(b => b.CreatedAt)
-                .ToListAsync();
-
-            var dtos = bookings.Select(b => new BookingDto
-            {
-                Id = b.Id,
-                UserId = b.UserId,
-                GymClassId = b.GymClassId,
-                Status = b.Status,
-                CreatedAt = b.CreatedAt
-            });
-
-            return GeneralResponse<IEnumerable<BookingDto>>.Ok(dtos);
         }
 
         public async Task<GeneralResponse<BookingDto>> UpdateBookingAsync(Guid bookingId, UpdateBookingDto request)

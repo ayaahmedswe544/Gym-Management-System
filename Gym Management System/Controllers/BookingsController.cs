@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Gym_Management_System.Business.DTOs.BookingDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -42,7 +42,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<IEnumerable<BookingDto>>>> GetMyBookings()
         {
             var userId = GetUserId();
-            var response = await _bookingService.GetMyBookingsAsync(userId);
+            var response = await _bookingService.GetBookingsByUserIdAsync(userId);
             return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
         }
 

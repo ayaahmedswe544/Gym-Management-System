@@ -60,7 +60,7 @@ namespace Gym_Management_System.Business.Services
             if (existing.Any())
                 return GeneralResponse<RoomDto>.Failure("A room with this name already exists.");
 
-            var room = new Room
+            var room = new Room 
             {
                 Name = nameNormalized,
                 Capacity = roomDto.Capacity,

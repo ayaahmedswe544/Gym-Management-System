@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Gym_Management_System.Business.DTOs.ClassDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -109,9 +109,9 @@ namespace Gym_Management_System.Controllers
                 trainerId = userId;
             }
 
-            var response = await _classService.UpdateClassAsync(id, request);
+            var response = await _classService.UpdateClassAsync(id, request, userId, isAdmin);
 
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
 
         }
         [HttpGet("{id}")]
@@ -126,9 +126,16 @@ namespace Gym_Management_System.Controllers
         [Authorize(Roles = "Admin,Trainer")]
         public async Task<ActionResult<GeneralResponse<bool>>> DeleteClass(Guid id)
         {
-            var response = await _classService.DeleteClassAsync(id);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
 
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
+            var userId = Guid.Parse(userIdClaim.Value);
+            var isAdmin = User.IsInRole("Admin");
+
+            var response = await _classService.DeleteClassAsync(id, userId, isAdmin);
+
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
 
         }
     }

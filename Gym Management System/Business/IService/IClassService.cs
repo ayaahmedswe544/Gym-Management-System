@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.ClassDTOs;
+using Gym_Management_System.Business.DTOs.ClassDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 
 namespace Gym_Management_System.Business.IService
@@ -9,7 +9,7 @@ namespace Gym_Management_System.Business.IService
         Task<GeneralResponse<ClassDto>> GetClassByIdAsync(Guid id);
 
         Task<GeneralResponse<ClassDto>> CreateClassAsync(CreateClassDto request, Guid trainerId);
-        Task<GeneralResponse<ClassDto>> UpdateClassAsync(Guid id, UpdateClassDto request);
-        Task<GeneralResponse<bool>> DeleteClassAsync(Guid id);
+        Task<GeneralResponse<ClassDto>> UpdateClassAsync(Guid id, UpdateClassDto request, Guid userId, bool isAdmin);
+        Task<GeneralResponse<bool>> DeleteClassAsync(Guid id, Guid userId, bool isAdmin);
     }
 }

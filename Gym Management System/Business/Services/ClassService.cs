@@ -164,11 +164,16 @@ namespace Gym_Management_System.Business.Services
                 TrainerName = trainer.FullName ?? string.Empty
             }, "Class created successfully");
         }
-        public async Task<GeneralResponse<ClassDto>> UpdateClassAsync(Guid id, UpdateClassDto request)
+        public async Task<GeneralResponse<ClassDto>> UpdateClassAsync(Guid id, UpdateClassDto request, Guid userId, bool isAdmin)
         {
             var gymClass = await _repository.GetByIdAsync(id);
             if (gymClass == null)
                 return GeneralResponse<ClassDto>.Failure("Class not found");
+
+            if (!isAdmin && gymClass.TrainerId != userId)
+            {
+                return GeneralResponse<ClassDto>.Failure("You can only update your own classes");
+            }
 
             if (request.StartTime >= request.EndTime)
             {
@@ -296,7 +301,7 @@ namespace Gym_Management_System.Business.Services
             };
         }
 
-        public async Task<GeneralResponse<bool>> DeleteClassAsync(Guid id)
+        public async Task<GeneralResponse<bool>> DeleteClassAsync(Guid id, Guid userId, bool isAdmin)
         {
             var gymClass = await _repository.GetByIdAsync(id);
             if (gymClass == null)
@@ -306,6 +311,16 @@ namespace Gym_Management_System.Business.Services
                     Success = false,
                     Data = false,
                     Message = "the class is not deleted"
+                };
+            }
+
+            if (!isAdmin && gymClass.TrainerId != userId)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Data = false,
+                    Message = "You can only delete your own classes"
                 };
             }
 

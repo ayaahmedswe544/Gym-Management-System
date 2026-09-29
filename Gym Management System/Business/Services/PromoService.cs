@@ -1,4 +1,4 @@
-﻿using Gym_Management_System.Business.DTOs.PromoDTOs;
+using Gym_Management_System.Business.DTOs.PromoDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Data;
@@ -22,9 +22,26 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<PromoCodeDto>> CreatePromoAsync(CreatePromoCodeDto promoCodeDto)
         {
+            if (string.IsNullOrWhiteSpace(promoCodeDto.Code))
+                return GeneralResponse<PromoCodeDto>.Failure("Promo code cannot be empty.");
+
+            if (promoCodeDto.DiscountPercentage <= 0 || promoCodeDto.DiscountPercentage > 100)
+                return GeneralResponse<PromoCodeDto>.Failure("Discount percentage must be greater than 0 and at most 100.");
+
+            if (promoCodeDto.ValidFrom >= promoCodeDto.ValidUntil)
+                return GeneralResponse<PromoCodeDto>.Failure("Valid from date must be earlier than valid until date.");
+
+            if (promoCodeDto.MaxUses <= 0)
+                return GeneralResponse<PromoCodeDto>.Failure("Max uses must be greater than zero.");
+
+            var codeNormalized = promoCodeDto.Code.Trim();
+            var existing = await _promoRepository.FindAsync(p => p.Code.ToLower() == codeNormalized.ToLower());
+            if (existing.Any())
+                return GeneralResponse<PromoCodeDto>.Failure("A promo code with this code already exists.");
+
             var promoCode = new PromoCode
             {
-                Code = promoCodeDto.Code,
+                Code = codeNormalized,
                 DiscountPercentage = promoCodeDto.DiscountPercentage,
                 ValidFrom = promoCodeDto.ValidFrom,
                 ValidUntil = promoCodeDto.ValidUntil,
@@ -42,7 +59,24 @@ namespace Gym_Management_System.Business.Services
             if (promo == null)
                 return GeneralResponse<PromoCodeDto>.Failure("Promo code not found.");
 
-            promo.Code = updatedPromoDto.Code;
+            if (string.IsNullOrWhiteSpace(updatedPromoDto.Code))
+                return GeneralResponse<PromoCodeDto>.Failure("Promo code cannot be empty.");
+
+            if (updatedPromoDto.DiscountPercentage <= 0 || updatedPromoDto.DiscountPercentage > 100)
+                return GeneralResponse<PromoCodeDto>.Failure("Discount percentage must be greater than 0 and at most 100.");
+
+            if (updatedPromoDto.ValidFrom >= updatedPromoDto.ValidUntil)
+                return GeneralResponse<PromoCodeDto>.Failure("Valid from date must be earlier than valid until date.");
+
+            if (updatedPromoDto.MaxUses <= 0)
+                return GeneralResponse<PromoCodeDto>.Failure("Max uses must be greater than zero.");
+
+            var codeNormalized = updatedPromoDto.Code.Trim();
+            var existing = await _promoRepository.FindAsync(p => p.Id != id && p.Code.ToLower() == codeNormalized.ToLower());
+            if (existing.Any())
+                return GeneralResponse<PromoCodeDto>.Failure("Another promo code with this code already exists.");
+
+            promo.Code = codeNormalized;
             promo.DiscountPercentage = updatedPromoDto.DiscountPercentage;
             promo.ValidFrom = updatedPromoDto.ValidFrom;
             promo.ValidUntil = updatedPromoDto.ValidUntil;

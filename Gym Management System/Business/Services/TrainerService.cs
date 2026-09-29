@@ -144,6 +144,11 @@ namespace Gym_Management_System.Business.Services
             }
             string? photoUrl = null;
 
+            if (updatedProfileDto.YearsOfExperience.HasValue && updatedProfileDto.YearsOfExperience.Value < 0)
+            {
+                return GeneralResponse<TrainerProfileDto>.Failure("Years of experience cannot be negative.");
+            }
+
             if (updatedProfileDto.Photo != null && updatedProfileDto.Photo.Length > 0)
             {
                
@@ -187,15 +192,18 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<TrainerAvailabilityDto>> SetAvailabilityAsync(CreateTrainerAvailabilityDto availabilityDto, Guid trainerId)
         {
-            var existingData = await _availabilityRepository.FindAsync(d => d.TrainerId == trainerId && d.DayOfWeek == availabilityDto.DayOfWeek);
-            if (existingData.Any()) {
-
-                return new GeneralResponse<TrainerAvailabilityDto>
-                {
-                    Success = false,
-                    Message = "An Availability with the same day already exists"
-                };
+            if (availabilityDto.StartTime >= availabilityDto.EndTime)
+            {
+                return GeneralResponse<TrainerAvailabilityDto>.Failure("Start time must be before end time.");
             }
+
+            var existingSlots = await _availabilityRepository.FindAsync(d => d.TrainerId == trainerId && d.DayOfWeek == availabilityDto.DayOfWeek);
+            var hasOverlap = existingSlots.Any(s => s.StartTime < availabilityDto.EndTime && s.EndTime > availabilityDto.StartTime);
+            if (hasOverlap)
+            {
+                return GeneralResponse<TrainerAvailabilityDto>.Failure("An availability slot that overlaps with the specified time already exists on this day.");
+            }
+
             var availability = new TrainerAvailability
             {
                 TrainerId = trainerId,
@@ -221,11 +229,24 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<TrainerAvailabilityDto>> UpdateAvailabilityAsync(UpdateTrainerAvailabilityDto availabilityDto, Guid trainerId)
         {
+            if (availabilityDto.StartTime >= availabilityDto.EndTime)
+            {
+                return GeneralResponse<TrainerAvailabilityDto>.Failure("Start time must be before end time.");
+            }
+
             var availability = await _availabilityRepository.GetByIdAsync(availabilityDto.Id);
             if (availability == null)
                 return GeneralResponse<TrainerAvailabilityDto>.Failure("Availability slot not found.");
             if (availability.TrainerId != trainerId)
                 return GeneralResponse<TrainerAvailabilityDto>.Failure("You can only update your own availability.");
+
+            var existingSlots = await _availabilityRepository.FindAsync(d => d.TrainerId == trainerId && d.DayOfWeek == availabilityDto.DayOfWeek && d.Id != availabilityDto.Id);
+            var hasOverlap = existingSlots.Any(s => s.StartTime < availabilityDto.EndTime && s.EndTime > availabilityDto.StartTime);
+            if (hasOverlap)
+            {
+                return GeneralResponse<TrainerAvailabilityDto>.Failure("An availability slot that overlaps with the specified time already exists on this day.");
+            }
+
             availability.DayOfWeek = availabilityDto.DayOfWeek;
             availability.StartTime = availabilityDto.StartTime;
             availability.EndTime = availabilityDto.EndTime;

@@ -175,19 +175,29 @@ namespace Gym_Management_System.Business.Services
                     if (newClass == null)
                         return GeneralResponse<BookingDto>.Failure("New gym class not found");
 
+                    if (newClass.StartTime <= DateTime.UtcNow)
+                        return GeneralResponse<BookingDto>.Failure("Cannot move booking to a class that has already started or ended");
+
+                    if (newStatus == BookingStatus.Confirmed)
+                    {
+                        var alreadyBookedInNewClass = await _db.Bookings
+                            .AnyAsync(b => b.UserId == booking.UserId && b.GymClassId == newClassId && b.Id != bookingId && b.Status == BookingStatus.Confirmed);
+
+                        if (alreadyBookedInNewClass)
+                            return GeneralResponse<BookingDto>.Failure("User already has a confirmed booking for the new class");
+
+                        if (newClass.CurrentBookingsCount >= newClass.MaxCapacity)
+                            return GeneralResponse<BookingDto>.Failure("New gym class is full");
+
+                        newClass.CurrentBookingsCount++;
+                    }
+
                     if (oldStatus == BookingStatus.Confirmed)
                     {
                         if (booking.GymClass != null)
                         {
                             booking.GymClass.CurrentBookingsCount = Math.Max(0, booking.GymClass.CurrentBookingsCount - 1);
                         }
-                    }
-
-                    if (newStatus == BookingStatus.Confirmed)
-                    {
-                        if (newClass.CurrentBookingsCount >= newClass.MaxCapacity)
-                            return GeneralResponse<BookingDto>.Failure("New gym class is full");
-                        newClass.CurrentBookingsCount++;
                     }
 
                     booking.GymClassId = newClassId;
@@ -204,8 +214,12 @@ namespace Gym_Management_System.Business.Services
                             }
                             else if (oldStatus != BookingStatus.Confirmed && newStatus == BookingStatus.Confirmed)
                             {
+                                if (booking.GymClass.StartTime <= DateTime.UtcNow)
+                                    return GeneralResponse<BookingDto>.Failure("Cannot confirm booking for a class that has already started or ended");
+
                                 if (booking.GymClass.CurrentBookingsCount >= booking.GymClass.MaxCapacity)
                                     return GeneralResponse<BookingDto>.Failure("Gym class is full");
+
                                 booking.GymClass.CurrentBookingsCount++;
                             }
                         }

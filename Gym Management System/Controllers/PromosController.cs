@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Gym_Management_System.Business.DTOs.PromoDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -40,7 +40,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<PromoCodeDto>>> UpdatePromo(Guid id, [FromBody] UpdatePromoCodeDto updatedPromoDto)
         {
             var response = await _promoService.UpdatePromoAsync(id, updatedPromoDto);     
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
 
         [HttpPost("validate")]

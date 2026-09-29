@@ -52,7 +52,7 @@ namespace Gym_Management_System.Controllers
         {
             var response = await _bookingService.UpdateBookingAsync(id, request);
 
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
 
         [HttpGet("{id}")]

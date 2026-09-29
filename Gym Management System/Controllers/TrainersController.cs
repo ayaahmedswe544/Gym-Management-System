@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using Gym_Management_System.Business.DTOs.TrainerDTOs;
 using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
@@ -24,7 +24,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<List<TrainerProfileDto>>>> GetAllTrainers()
         {
             var response = await _trainerService.GetAllTrainersAsync();
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
         }
 
         [HttpGet("{id}")]
@@ -39,7 +39,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<TrainerProfileDto>>> UpdateProfile([FromForm] UpdateTrainerProfileDto updatedProfile)
         {
             var response = await _trainerService.UpdateProfileAsync(updatedProfile, GetUserId());
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
 
         [HttpPost("add-Availability")]
@@ -47,7 +47,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<TrainerAvailabilityDto>>> SetAvailability([FromBody] CreateTrainerAvailabilityDto availability)
         {
             var response = await _trainerService.SetAvailabilityAsync(availability, GetUserId());
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
 
         [HttpPut("update-availability")]
@@ -56,20 +56,20 @@ namespace Gym_Management_System.Controllers
         {
             var response = await _trainerService.UpdateAvailabilityAsync(availability, GetUserId());
             
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status204NoContent, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
         [HttpDelete("delete-availability/{id}")]
         [Authorize(Roles = "Trainer")]
         public async Task<ActionResult<GeneralResponse<string>>> DeleteAvailability(Guid id)
         {
             var response = await _trainerService.DeleteAvailabilityAsync(id, GetUserId());
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
         [HttpGet("get-availabilies/{trainerId}")]
         public async Task<ActionResult<GeneralResponse<IEnumerable<TrainerAvailabilityDto>>>> GetAvailabilities(Guid trainerId)
         {
             var response = await _trainerService.GetAvailabilitiesAsync(trainerId);
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status500InternalServerError, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
         }
 
         private Guid GetUserId()

@@ -25,7 +25,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<IEnumerable<RoomDto>>>> GetRooms()
         {
             var response = await _roomService.GetRoomsAsync();
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status204NoContent, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
             
         }
 
@@ -41,7 +41,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<RoomDto>>> UpdateRoom(Guid id, [FromBody] UpdateRoomDto roomDto)
         {
             var response = await _roomService.UpdateRoomAsync(id, roomDto);
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
 
         [HttpGet("schedule/{id}")]
@@ -56,7 +56,7 @@ namespace Gym_Management_System.Controllers
         public async Task<ActionResult<GeneralResponse<bool>>> DeleteRoom(Guid id)
         {
             var response = await _roomService.DeleteRoomAsync(id);
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status304NotModified, response);
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
         }
     }
 }

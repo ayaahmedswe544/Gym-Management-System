@@ -55,11 +55,11 @@ namespace Gym_Management_System.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Member,Admin")]
         public async Task<ActionResult<GeneralResponse>> DeleteReview(Guid id)
         {
-            var response = await _reviewService.DeleteReviewAsync(id, GetUserId());
-            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
+            var response = await _reviewService.DeleteReviewAsync(id, GetUserId(), User.IsInRole("Admin"));
+            return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }
 
         private Guid GetUserId()

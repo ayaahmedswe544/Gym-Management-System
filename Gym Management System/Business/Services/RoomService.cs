@@ -49,9 +49,20 @@ namespace Gym_Management_System.Business.Services
 
         public async Task<GeneralResponse<RoomDto>> AddRoomAsync(CreateRoomDto roomDto)
         {
+            if (string.IsNullOrWhiteSpace(roomDto.Name))
+                return GeneralResponse<RoomDto>.Failure("Room name cannot be empty.");
+
+            if (roomDto.Capacity <= 0)
+                return GeneralResponse<RoomDto>.Failure("Room capacity must be greater than zero.");
+
+            var nameNormalized = roomDto.Name.Trim();
+            var existing = await _roomRepository.FindAsync(r => r.Name.ToLower() == nameNormalized.ToLower());
+            if (existing.Any())
+                return GeneralResponse<RoomDto>.Failure("A room with this name already exists.");
+
             var room = new Room
             {
-                Name = roomDto.Name,
+                Name = nameNormalized,
                 Capacity = roomDto.Capacity,
                 Features = roomDto.Features
             };
@@ -106,6 +117,12 @@ namespace Gym_Management_System.Business.Services
             var room = await _roomRepository.GetByIdAsync(id);
             if (room == null) return GeneralResponse<bool>.Failure("Room not found.");
 
+            var upcomingClasses = await _classRepository.FindAsync(c => c.RoomId == id && c.StartTime > DateTime.UtcNow);
+            if (upcomingClasses.Any())
+            {
+                return GeneralResponse<bool>.Failure($"Cannot delete room because it is assigned to {upcomingClasses.Count()} upcoming class(es). Reassign or cancel those classes first.");
+            }
+
             _roomRepository.Remove(room);
             await _roomRepository.SaveChangesAsync();
 
@@ -117,7 +134,25 @@ namespace Gym_Management_System.Business.Services
             var room = await _roomRepository.GetByIdAsync(id);
             if (room == null) return GeneralResponse<RoomDto>.Failure("Room not found.");
 
-            room.Name = roomDto.Name;
+            if (string.IsNullOrWhiteSpace(roomDto.Name))
+                return GeneralResponse<RoomDto>.Failure("Room name cannot be empty.");
+
+            if (roomDto.Capacity <= 0)
+                return GeneralResponse<RoomDto>.Failure("Room capacity must be greater than zero.");
+
+            var nameNormalized = roomDto.Name.Trim();
+            var existing = await _roomRepository.FindAsync(r => r.Id != id && r.Name.ToLower() == nameNormalized.ToLower());
+            if (existing.Any())
+                return GeneralResponse<RoomDto>.Failure("Another room with this name already exists.");
+
+            var upcomingClasses = await _classRepository.FindAsync(c => c.RoomId == id && c.StartTime > DateTime.UtcNow);
+            var maxClassCapacity = upcomingClasses.Any() ? upcomingClasses.Max(c => c.MaxCapacity) : 0;
+            if (roomDto.Capacity < maxClassCapacity)
+            {
+                return GeneralResponse<RoomDto>.Failure($"Cannot reduce room capacity to {roomDto.Capacity} because upcoming class requires at least {maxClassCapacity}.");
+            }
+
+            room.Name = nameNormalized;
             room.Capacity = roomDto.Capacity;
             room.Features = roomDto.Features;
 

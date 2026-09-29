@@ -139,7 +139,7 @@ namespace Gym_Management_System.Business.Services
             return GeneralResponse<IEnumerable<ReviewDto>>.Ok(dtos);
         }
 
-        public async Task<GeneralResponse<bool>> DeleteReviewAsync(Guid id, Guid userId)
+        public async Task<GeneralResponse<bool>> DeleteReviewAsync(Guid id, Guid userId, bool isAdmin)
         {
             var review = await _reviewRepository.GetByIdAsync(id);
             if (review == null) return new GeneralResponse<bool>()
@@ -148,8 +148,7 @@ namespace Gym_Management_System.Business.Services
                 Data = false,
                 Message = "Review not found"
             };
-
-            if (review.UserId != userId)
+            if (!isAdmin && review.UserId != userId)
             {
                 return new GeneralResponse<bool>()
                 {

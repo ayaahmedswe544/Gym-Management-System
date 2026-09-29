@@ -135,9 +135,9 @@ namespace Gym_Management_System.Business.Services
             return GeneralResponse<IEnumerable<BookingDto>>.Ok(dtos);
         }
 
-        public async Task<GeneralResponse<BookingDto>> GetBookingByIdAsync(Guid bookingId)
+        public async Task<GeneralResponse<BookingDto>> GetBookingByIdAsync(Guid bookingId, Guid userId)
         {
-            var booking = await _db.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId);
+            var booking = await _db.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId && b.UserId == userId);
             if (booking == null)
                 return GeneralResponse<BookingDto>.Failure("Booking not found");
 

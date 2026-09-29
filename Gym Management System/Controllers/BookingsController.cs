@@ -58,7 +58,8 @@ namespace Gym_Management_System.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<GeneralResponse<BookingDto>>> GetBooking(Guid id)
         {
-            var response = await _bookingService.GetBookingByIdAsync(id);
+            var userId = GetUserId();
+            var response = await _bookingService.GetBookingByIdAsync(id, userId);
             return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status404NotFound, response);
         }
 

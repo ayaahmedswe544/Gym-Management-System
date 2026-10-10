@@ -54,7 +54,10 @@ namespace Gym_Management_System.Business.Services
 
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
-                return GeneralResponse<AuthResponse>.Failure("User creation failed! Please check user details and try again.");
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                return GeneralResponse<AuthResponse>.Failure($"User creation failed: {errors}");
+            }
 
             string[] roleNames = { "Admin", "Trainer", "Member" };
             foreach (var roleName in roleNames)

@@ -36,6 +36,7 @@ namespace Gym_Management_System.Controllers
         }
 
         [HttpPost("register/admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest request)
         {
             var result = await _authService.RegisterAsync(request, "Admin");

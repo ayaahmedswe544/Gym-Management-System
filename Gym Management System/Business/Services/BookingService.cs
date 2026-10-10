@@ -91,6 +91,11 @@ namespace Gym_Management_System.Business.Services
                 if (booking.Status == BookingStatus.Cancelled)
                     return GeneralResponse<string>.Failure("Booking is already cancelled");
 
+                if (booking.GymClass != null && booking.GymClass.StartTime <= DateTime.UtcNow)
+                {
+                    return GeneralResponse<string>.Failure("Cannot cancel booking for a class that has already started or ended");
+                }
+
                 booking.Status = BookingStatus.Cancelled;
                 booking.CancelledAt = DateTime.UtcNow;
 

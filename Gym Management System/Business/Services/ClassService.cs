@@ -228,6 +228,12 @@ namespace Gym_Management_System.Business.Services
             gymClass.Type = request.Type;
             gymClass.StartTime = request.StartTime;
             gymClass.EndTime = request.EndTime;
+
+            if (request.MaxCapacity < gymClass.CurrentBookingsCount)
+            {
+                return GeneralResponse<ClassDto>.Failure($"Cannot set max capacity ({request.MaxCapacity}) below current bookings count ({gymClass.CurrentBookingsCount})");
+            }
+
             gymClass.MaxCapacity = request.MaxCapacity;
             gymClass.Status = request.Status;
 

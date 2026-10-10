@@ -27,7 +27,7 @@ namespace Gym_Management_System.Controllers
             return Ok(result);
         }
 
-        [HttpPost("register/admin")]
+        [HttpPost("register/trainer")]
         public async Task<IActionResult> RegisterTrainer([FromBody] RegisterRequest request)
         {
             var result = await _authService.RegisterAsync(request, "Trainer");
@@ -35,7 +35,7 @@ namespace Gym_Management_System.Controllers
             return Ok(result);
         }
 
-        [HttpPost("register/trainer")]
+        [HttpPost("register/admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest request)
         {
             var result = await _authService.RegisterAsync(request, "Admin");

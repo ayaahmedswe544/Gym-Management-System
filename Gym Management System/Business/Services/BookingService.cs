@@ -156,7 +156,7 @@ namespace Gym_Management_System.Business.Services
             });
         }
 
-        public async Task<GeneralResponse<BookingDto>> UpdateBookingAsync(Guid bookingId, UpdateBookingDto request)
+        public async Task<GeneralResponse<BookingDto>> UpdateBookingAsync(Guid bookingId, UpdateBookingDto request, Guid userId, bool isAdmin)
         {
             using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
@@ -168,6 +168,10 @@ namespace Gym_Management_System.Business.Services
 
                 if (booking == null)
                     return GeneralResponse<BookingDto>.Failure("Booking not found");
+                if (!isAdmin && booking.UserId != userId)
+                {
+                    return GeneralResponse<BookingDto>.Failure("You can only update your own bookings");
+                }
 
                 var oldClassId = booking.GymClassId;
                 var newClassId = request.GymClassId;

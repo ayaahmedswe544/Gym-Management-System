@@ -4,6 +4,7 @@ using Gym_Management_System.Business.GeneralResponse;
 using Gym_Management_System.Business.IService;
 using Gym_Management_System.Data.Models;
 using Gym_Management_System.Data_Access.IRepository;
+using System.Linq;
 
 namespace Gym_Management_System.Business.Services
 {
@@ -33,33 +34,28 @@ namespace Gym_Management_System.Business.Services
             try
             {
                 var profiles = await _profileRepository.GetAllAsync();
-                if (profiles == null)
-                {
-                    return new GeneralResponse<List<TrainerProfileDto>>
-                    {
-                        Success = false,
-                        Message = "There are no Trainers",
-                        Data = null,
-                        Errors = null
-                    };
-                }
                 var dtos = new List<TrainerProfileDto>();
-                foreach (var p in profiles)
+                
+                if (profiles != null)
                 {
-                    var user = await _userRepository.GetByIdAsync(p.UserId);
-                    dtos.Add(new TrainerProfileDto
+                    foreach (var p in profiles)
                     {
-                        Id = p.Id,
-                        UserId = p.UserId,
-                        FullName = user?.FullName ?? string.Empty,
-                        Bio = p.Bio,
-                        Specialties = p.Specialties,
+                        var user = await _userRepository.GetByIdAsync(p.UserId);
+                        dtos.Add(new TrainerProfileDto
+                        {
+                            Id = p.Id,
+                            UserId = p.UserId,
+                            FullName = user?.FullName ?? string.Empty,
+                            Bio = p.Bio,
+                            Specialties = p.Specialties,
                         YearsOfExperience = p.YearsOfExperience,
                         SocialLinks = p.SocialLinks,
                         PhotoUrl = p.PhotoUrl,
                         PhoneNumber = user?.PhoneNumber ?? string.Empty
                     });
                 }
+                }
+                
                 return new GeneralResponse<List<TrainerProfileDto>>
                 {
                     Success = true,
@@ -68,7 +64,8 @@ namespace Gym_Management_System.Business.Services
                     Errors = null
                 };
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
 
                 return new GeneralResponse<List<TrainerProfileDto>>
                 {
@@ -276,32 +273,21 @@ namespace Gym_Management_System.Business.Services
         public async Task<GeneralResponse<IEnumerable<TrainerAvailabilityDto>>> GetAvailabilitiesAsync(Guid trainerId)
         {
             var slots = await _availabilityRepository.FindAsync(a => a.TrainerId == trainerId);
-            if(slots== null)
-            {
-                return new GeneralResponse<IEnumerable<TrainerAvailabilityDto>>
-                {
-                    Success = false,
-                    Message = "There are no slots yet",
-                    Data = null,
-                    Errors = null
-
-                };
-            }
-          var data= slots.OrderBy(a => a.DayOfWeek).ThenBy(a => a.StartTime).Select(a => new TrainerAvailabilityDto
+            var data = slots?.OrderBy(a => a.DayOfWeek).ThenBy(a => a.StartTime).Select(a => new TrainerAvailabilityDto
             {
                 Id = a.Id,
                 TrainerId = a.TrainerId,
                 DayOfWeek = a.DayOfWeek,
                 StartTime = a.StartTime,
                 EndTime = a.EndTime
-            });
+            }) ?? Enumerable.Empty<TrainerAvailabilityDto>();
+
             return new GeneralResponse<IEnumerable<TrainerAvailabilityDto>>
             {
                 Success = true,
-                Message = "Availabilities pulled successfuly",
+                Message = "Availabilities pulled successfully",
                 Data = data,
                 Errors = null
-
             };
 
 

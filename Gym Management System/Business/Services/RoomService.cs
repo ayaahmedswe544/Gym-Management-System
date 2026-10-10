@@ -27,7 +27,7 @@ namespace Gym_Management_System.Business.Services
                 return new GeneralResponse<IEnumerable<RoomDto>>
                 {
                     Success=true,
-                    Message="There are now rooms"
+                    Message="There are no rooms"
 
                 };
             }

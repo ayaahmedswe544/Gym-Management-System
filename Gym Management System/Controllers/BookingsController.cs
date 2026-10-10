@@ -47,10 +47,17 @@ namespace Gym_Management_System.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Trainer")]
+        [Authorize(Roles = "Admin,Trainer,Member")]
         public async Task<ActionResult<GeneralResponse<BookingDto>>> UpdateBooking(Guid id, [FromBody] UpdateBookingDto request)
         {
-            var response = await _bookingService.UpdateBookingAsync(id, request);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim.Value);
+            var isAdmin = User.IsInRole("Admin");
+
+            var response = await _bookingService.UpdateBookingAsync(id, request, userId, isAdmin);
 
             return StatusCode(response.Success ? StatusCodes.Status200OK : StatusCodes.Status400BadRequest, response);
         }

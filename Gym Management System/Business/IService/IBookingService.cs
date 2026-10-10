@@ -8,7 +8,7 @@ namespace Gym_Management_System.Business.IService
         Task<GeneralResponse<BookingDto>> CreateBookingAsync(CreateBookingDto request, Guid userId);
         Task<GeneralResponse<string>> CancelBookingAsync(Guid bookingId, Guid userId);
         Task<GeneralResponse<IEnumerable<BookingDto>>> GetBookingsByUserIdAsync(Guid userId);
-        Task<GeneralResponse<BookingDto>> UpdateBookingAsync(Guid bookingId, UpdateBookingDto request);
+        Task<GeneralResponse<BookingDto>> UpdateBookingAsync(Guid bookingId, UpdateBookingDto request, Guid userId, bool isAdmin);
         Task<GeneralResponse<BookingDto>> GetBookingByIdAsync(Guid bookingId, Guid userId);
     }
 }

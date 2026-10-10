@@ -59,6 +59,9 @@ namespace Gym_Management_System.Business.Services
             if (promo == null)
                 return GeneralResponse<PromoCodeDto>.Failure("Promo code not found.");
 
+            // Check if promo has been used
+            var hasUsage = await _db.PromoCodeUsages.AnyAsync(u => u.PromoCodeId == id);
+
             if (string.IsNullOrWhiteSpace(updatedPromoDto.Code))
                 return GeneralResponse<PromoCodeDto>.Failure("Promo code cannot be empty.");
 
@@ -70,6 +73,15 @@ namespace Gym_Management_System.Business.Services
 
             if (updatedPromoDto.MaxUses <= 0)
                 return GeneralResponse<PromoCodeDto>.Failure("Max uses must be greater than zero.");
+
+            // Prevent changing core fields if promo has been used
+            if (hasUsage)
+            {
+                if (promo.Code != updatedPromoDto.Code.Trim())
+                    return GeneralResponse<PromoCodeDto>.Failure("Cannot change code of a promo that has been used.");
+                if (promo.ValidFrom != updatedPromoDto.ValidFrom)
+                    return GeneralResponse<PromoCodeDto>.Failure("Cannot change validity dates of a promo that has been used.");
+            }
 
             var codeNormalized = updatedPromoDto.Code.Trim();
             var existing = await _promoRepository.FindAsync(p => p.Id != id && p.Code.ToLower() == codeNormalized.ToLower());
@@ -140,6 +152,11 @@ namespace Gym_Management_System.Business.Services
             var promo = await _promoRepository.GetByIdAsync(id);
             if (promo == null)
                 return GeneralResponse<bool>.Failure("Promo code not found.");
+
+            // Prevent deletion if promo has been used
+            var hasUsage = await _db.PromoCodeUsages.AnyAsync(u => u.PromoCodeId == id);
+            if (hasUsage)
+                return GeneralResponse<bool>.Failure("Cannot delete promo code that has been used. Deactivate it instead.");
 
             _promoRepository.Remove(promo);
             await _promoRepository.SaveChangesAsync();

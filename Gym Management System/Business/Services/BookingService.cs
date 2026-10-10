@@ -39,10 +39,10 @@ namespace Gym_Management_System.Business.Services
                     return GeneralResponse<BookingDto>.Failure("Cannot book a class that has already started");
 
                 var alreadyBooked = await _db.Bookings
-                    .AnyAsync(b => b.UserId == userId && b.GymClassId == request.GymClassId && b.Status == BookingStatus.Confirmed);
+                    .AnyAsync(b => b.UserId == userId && b.GymClassId == request.GymClassId);
 
                 if (alreadyBooked)
-                    return GeneralResponse<BookingDto>.Failure("You already have a confirmed booking for this class");
+                    return GeneralResponse<BookingDto>.Failure("You already have a booking for this class");
 
                 gymClass.CurrentBookingsCount++;
 

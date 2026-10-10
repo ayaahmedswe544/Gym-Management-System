@@ -101,6 +101,11 @@ namespace Gym_Management_System.Business.Services
                 return GeneralResponse<ClassDto>.Failure("Start time must be before end time");
             }
 
+            if (request.StartTime <= DateTime.UtcNow)
+            {
+                return GeneralResponse<ClassDto>.Failure("Start time must be in the future");
+            }
+
             if (request.MaxCapacity <= 0)
             {
                 return GeneralResponse<ClassDto>.Failure("Max capacity must be greater than zero");

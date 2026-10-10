@@ -105,10 +105,10 @@ namespace Gym_Management_System.Business.Services
                 return GeneralResponse<ReviewDto>.Failure("You can only review trainers whose classes you have attended.");
 
             var existingReview = await _reviewRepository.FindAsync(r =>
-                r.UserId == userId && r.TrainerId == reviewDto.TrainerId);
+                r.UserId == userId && r.TrainerId == reviewDto.TrainerId && r.GymClassId == reviewDto.GymClassId);
             if (existingReview.Any())
             {
-                return GeneralResponse<ReviewDto>.Failure("You have already reviewed this trainer");
+                return GeneralResponse<ReviewDto>.Failure("You have already reviewed this trainer for this class");
             }
 
             var review = new Review

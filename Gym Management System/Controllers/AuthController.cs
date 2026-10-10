@@ -35,7 +35,7 @@ namespace Gym_Management_System.Controllers
             return Ok(result);
         }
 
-        [HttpPost("register/admin")]
+        [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest request)
         {
